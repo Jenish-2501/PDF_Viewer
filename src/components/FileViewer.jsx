@@ -27,10 +27,10 @@ const FileViewer = ({ fileUrl }) => {
   };
 
   return (
-    <div className="w-full h-screen">
-        <Suspense fallback={<Loading />}>
-            {renderViewer()}
-        </Suspense>
+    <div className="w-screen h-screen">
+      <Suspense fallback={<Loading />}>
+        {renderViewer()}
+      </Suspense>
     </div>
   );
 };

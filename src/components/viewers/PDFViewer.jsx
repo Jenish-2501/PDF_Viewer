@@ -1,13 +1,10 @@
-import React, { useState, useRef, useCallback } from 'react';
+import React, { useState, useRef } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
-import { useResizeObserver } from '@wojtekmaj/react-hooks';
 import "pdfjs-dist/web/pdf_viewer.css";
 import { FullScreen, useFullScreenHandle } from "react-full-screen";
 
-pdfjs.GlobalWorkerOptions.workerSrc = new URL(
-  'pdfjs-dist/build/pdf.worker.min.mjs',
-  import.meta.url,
-).toString();
+// Fix PDF worker configuration for Vite
+pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
 
 const PDFViewer = ({ fileUrl }) => {
   const [numPages, setNumPages] = useState(null);
@@ -16,12 +13,9 @@ const PDFViewer = ({ fileUrl }) => {
   const [rotation, setRotation] = useState(0);
   const containerRef = useRef(null);
   const handle = useFullScreenHandle();
-
-  const onResize = useCallback(() => {
-    // Optional: adjust scale on container resize
-  }, []);
-
-  useResizeObserver(containerRef, {}, onResize);
+  
+  // Use Google PDF Viewer as a fallback to avoid CORS issues
+  const googleViewerUrl = `https://docs.google.com/viewer?url=${encodeURIComponent(fileUrl)}&embedded=true`;
 
   const onDocumentLoadSuccess = ({ numPages }) => {
     setNumPages(numPages);
@@ -72,18 +66,11 @@ const PDFViewer = ({ fileUrl }) => {
 
       {/* PDF Container */}
       <div className="flex-1 overflow-auto" ref={containerRef}>
-        <Document
-          file={fileUrl}
-          onLoadSuccess={onDocumentLoadSuccess}
-          loading={<div className="flex justify-center items-center h-full"><div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500"></div></div>}
-          error={<div className="text-red-500 text-center p-4">Failed to load PDF file.</div>}
-        >
-          <Page
-            pageNumber={pageNumber}
-            scale={scale}
-            rotate={rotation} // rotation works here
-          />
-        </Document>
+        <iframe 
+          src={googleViewerUrl}
+          className="w-full h-full border-none"
+          title="PDF Viewer"
+        />
       </div>
     </FullScreen>
   );
